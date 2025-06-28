@@ -91,18 +91,6 @@ function parseCSVAndRender() {
                             callbacks: {
                                 label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1) ?? 'N/A'}`
                             }
-                        },
-                        zoom: {
-                            pan: {
-                                enabled: true,
-                                mode: 'x'
-                            },
-                            zoom: {
-                                wheel: { enabled: true },
-                                mode: 'x'
-                            },
-                            onZoom: ({ chart }) => adjustYScale(chart),
-                            onPan: ({ chart }) => adjustYScale(chart)
                         }
                     },
                     scales: {
