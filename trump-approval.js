@@ -9,19 +9,45 @@ function getPartyColor(party) {
     return colors[party] || '#888888';
 }
 
+function adjustYScale(chart) {
+    const xMin = chart.scales.x.min;
+    const xMax = chart.scales.x.max;
+
+    const visibleYValues = [];
+
+    chart.data.datasets.forEach(dataset => {
+        dataset.data.forEach((value, index) => {
+            const time = new Date(chart.data.labels[index]).getTime();
+            if (time >= xMin && time <= xMax && value != null) {
+                visibleYValues.push(value);
+            }
+        });
+    });
+
+    if (visibleYValues.length) {
+        const minY = Math.min(...visibleYValues);
+        const maxY = Math.max(...visibleYValues);
+        const padding = (maxY - minY) * 0.1 || 5;
+
+        chart.options.scales.y.min = Math.max(0, minY - padding);
+        chart.options.scales.y.max = Math.min(100, maxY + padding);
+        chart.update('none');
+    }
+}
+
 function parseCSVAndRender() {
     Papa.parse(csvUrl, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-            const data = results.data.filter(row => row.Date && (row.Approve || row.Disapprove || row['Neutral/No Opinion']));
+            const data = results.data.filter(row => row.Date && (row.Approve || row.Disapprove));
             if (!data.length) {
                 alert('No valid data found in CSV');
                 return;
             }
 
-            const keys = ['Approve', 'Disapprove', 'Neutral/No Opinion'];
+            const keys = ['Approve', 'Disapprove'];
             const grouped = {};
 
             data.forEach(row => {
@@ -39,9 +65,7 @@ function parseCSVAndRender() {
                 label: key,
                 data: labels.map(date => {
                     const vals = grouped[date][key] || [];
-                    if (vals.length === 0) return null;
-                    const avg = vals.reduce((sum, v) => sum + v, 0) / vals.length;
-                    return avg;
+                    return vals.length ? vals.reduce((sum, v) => sum + v, 0) / vals.length : null;
                 }),
                 borderColor: getPartyColor(key),
                 backgroundColor: getPartyColor(key),
@@ -49,39 +73,57 @@ function parseCSVAndRender() {
                 spanGaps: false,
                 fill: false,
                 borderWidth: 2,
-                pointRadius: 3,
+                pointRadius: 0,
             }));
 
             const ctx = document.getElementById('pollChart').getContext('2d');
-            new Chart(ctx, {
+            const chart = new Chart(ctx, {
                 type: 'line',
                 data: { labels, datasets },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     interaction: { mode: 'nearest', intersect: false },
                     plugins: {
                         legend: { position: 'top' },
                         title: { display: true, text: 'Trump Approval Rating Over Time' },
                         tooltip: {
                             callbacks: {
-                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1) ?? 'N/A'}`,
+                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1) ?? 'N/A'}`
                             }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            },
+                            zoom: {
+                                wheel: { enabled: true },
+                                mode: 'x'
+                            },
+                            onZoom: ({ chart }) => adjustYScale(chart),
+                            onPan: ({ chart }) => adjustYScale(chart)
                         }
                     },
                     scales: {
                         x: {
                             type: 'time',
                             time: { unit: 'day', tooltipFormat: 'yyyy-MM-dd', displayFormats: { day: 'MMM dd' } },
-                            ticks: { autoSkip: true, maxTicksLimit: 10 }
+                            ticks: { autoSkip: true, maxTicksLimit: 12 }
                         },
                         y: {
-                            min: 0,
-                            max: 100,
-                            beginAtZero: true
+                            beginAtZero: false
                         }
                     }
                 }
             });
+
+            adjustYScale(chart); // Set initial Y-axis zoom
+
+            // Redirect when chart is clicked
+            document.getElementById('pollChart').onclick = () => {
+                window.location.href = 'xpolls/us/trump-approval/index.html'; // 👈 your target subsite
+            };  
         },
         error: (err) => {
             console.error('CSV load error:', err);

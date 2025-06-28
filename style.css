@@ -15,4 +15,12 @@ h1 {
     max-width: 900px;
     margin: 0 auto 40px;
     padding: 0 1rem;
+    height: 400px;
+    /* 👈 Add this line */
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
 }
