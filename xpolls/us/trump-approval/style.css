@@ -1,0 +1,75 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 40px;
+}
+
+.table-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  /*overflow-x: auto;*/
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+th {
+  background: #f4f4f4;
+  font-weight: bold;
+}
+
+.grade-cell {
+  position: relative;
+  cursor: default;
+  /* pointer if clickable */
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: max-content;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+
+  /* Positioning */
+  position: absolute;
+  bottom: 125%;
+  /* show above the text */
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* Transition */
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.grade-cell:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
