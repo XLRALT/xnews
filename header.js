@@ -25,7 +25,7 @@
   `;
 
   const link = document.createElement('a');
-  link.href = './xnews/index.html';  // absolute path from root
+  link.href = 'https://xlralt.github.io/xnews/';  // absolute path from root
   link.textContent = 'XNews';
   link.style.cssText = `
     color: white;
